@@ -1,13 +1,11 @@
 use thiserror::Error;
 pub type Result<T = ()> = std::result::Result<T, Error>;
 
-
 #[derive(Clone, Debug)]
 pub(crate) struct ErrorElement {
     message: String,
     code: i32,
 }
-
 
 #[derive(Error, Debug)]
 pub enum Error {
@@ -21,7 +19,6 @@ pub enum Error {
     Number(String),
     #[error("error code {1} from node: {0}")]
     NodeError(String, i32),
-
 }
 
 impl Error {

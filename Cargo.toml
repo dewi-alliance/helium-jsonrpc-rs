@@ -1,20 +1,23 @@
 [package]
-name = "helium-jsonrpc-rs"
+name = "helium-jsonrpc"
 version = "1.0.1"
 readme = "README.md"
-description = "An async library for the Helium blockchain JSON_RPC interface"
+description = "An async library for the Helium blockchain-node JSON_RPC interface"
 authors = ["Kyle Bales <masterjedi@gmail.com>"]
 edition = "2018"
+license = "Apache-2.0"
+license-file = "LICENSE"
 
 [dependencies]
+async-trait = "0"
+base64 = "0"
+futures = "0"
+helium-api = "3.0.0"
 reqwest = {version = "0", default-features=false, features = ["gzip", "json", "rustls-tls"]}
+rust_decimal = {version = "1", features = ["serde-float"] }
 serde =  {version = "1", features=["derive"]}
 serde_json = "1"
-base64 = "0"
-rust_decimal = {version = "1", features = ["serde-float"] }
 thiserror = "1"
-futures = "0"
-async-trait = "0"
 
 [dev-dependencies]
 tokio = {version = "1", features = ["full"]}
