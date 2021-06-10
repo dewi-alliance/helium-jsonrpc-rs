@@ -1,52 +1,29 @@
-# helium-api
+# helium-jsonrpc-client
 
-An async library to access the public [Helium](https://helium.com) blockchain REST API.
-
-[![Crates.io][crates-badge]][crates-url]
-[![docs.rs][docs-badge]][docs-url]
-[![Build Status][actions-badge]][actions-url]
-[![Discord chat][discord-badge]][discord-url]
-
-[crates-badge]: https://img.shields.io/crates/v/helium-api.svg
-[crates-url]: https://crates.io/crates/helium-api
-[docs-badge]: https://docs.rs/helium-api/badge.svg
-[docs-url]: https://docs.rs/helium-api/latest/helium_api/
-[actions-badge]: https://github.com/helium/helium-api-rs/workflows/CI/badge.svg
-[actions-url]: https://github.com/helium/helium-api-rs/actions?query=workflow%3ACI+branch%3Amaster
-[discord-badge]: https://img.shields.io/discord/500028886025895936.svg?logo=discord&style=flat-square
-[discord-url]: https://discord.gg/helium
+An async library for Helium's[blockchain-node](https://github.com/helium/blockchain-node) using JSON-RPC calls.
 
 ## Overview
 
-The Helium API is a REST API service as defined by the
-[blockhain-http](https://github.com/helium/blockchain-http) service. This
-library attempts to wrap this API in an async, easy to use library that supports
-the conventions as exposed by the API. This includes:
-
-* Modular access to each of the main areas of the Helium API
-* Support for lazily fetched paged responses
-
-Contributions and helpful suggestions are [always
-welcome](https://github.com/helium/helium-api-rs/issues)
+This is a fork from [helium-api-rs](https://github.com/helium/helium-api-rs).
+It is part of the ETL Lite project for tracking and storing data from the Helium blockchain.
 
 ## Example
 
-Create a client to the default `api.helium.io` endpoint and ask for a given
-account.
+
 
 ```rust,no-run
-use helium_api::*;
+use helium_jsonrpc_rs::{ blocks };
 
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let client = Client::default();
-    let account = accounts::get(
-        &client,
-        "13buBykFQf5VaQtv7mWj2PBY9Lq4i1DeXhg7C4Vbu3ppzqqNkTH",
-    )
-    .await?;
-    println!("Account: {:?}", account);
-    Ok(())
+async fn main() {
+	let height = 873465;
+	let client = helium_jsonrpc_rs::Client::new_with_base_url("http://192.168.1.12:4467".to_string());
+	let block = match blocks::get_block(&client, &height).await {
+		Ok(b) => b, 
+		Err(e) => panic!("Couldn't get block: {}", e),
+	};
+
+	println!("Found block {} with {} transactions.", height, block.transactions.len());
 }
 ```
 
