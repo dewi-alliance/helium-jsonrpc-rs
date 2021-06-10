@@ -1,10 +1,8 @@
 use async_trait::async_trait;
-use futures::{
-    future, Future as StdFuture, FutureExt, TryFutureExt,
-};
+use futures::{future, Future as StdFuture, FutureExt, TryFutureExt};
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
-use std::{pin::Pin, time::Duration};
 use std::time::SystemTime;
+use std::{pin::Pin, time::Duration};
 
 /// A type alias for `Future` that may return `crate::error::Error`
 pub type Future<T> = Pin<Box<dyn StdFuture<Output = Result<T>> + Send>>;
@@ -32,16 +30,9 @@ pub const TXN_GET: &str = "transaction_get";
 #[derive(Clone, Serialize, Deserialize, Debug)]
 #[serde(untagged)]
 pub(crate) enum Response<T> {
-    Data {
-        result: T,
-        id: String,
-    },
-    Error {
-        id: String,
-        error: ErrorElement,
-    }    
+    Data { result: T, id: String },
+    Error { id: String, error: ErrorElement },
 }
-
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
 pub(crate) struct ErrorElement {
@@ -81,7 +72,6 @@ impl Client {
         Self { base_url, client }
     }
 
-
     pub(crate) fn post<T, R>(&self, path: &str, json: &T) -> Future<Result<R>>
     where
         T: Serialize + ?Sized,
@@ -98,10 +88,10 @@ impl Client {
                     let data: Future<Result<R>> = result
                         .json()
                         .map_err(error::Error::from)
-                        .map_ok(|v: Response<R>| {
-                            match v {
-                                Response::Data{ result, .. } => Ok(result),
-                                Response::Error{ error, ..} => Err(Error::NodeError(error.message, error.code)),
+                        .map_ok(|v: Response<R>| match v {
+                            Response::Data { result, .. } => Ok(result),
+                            Response::Error { error, .. } => {
+                                Err(Error::NodeError(error.message, error.code))
                             }
                         })
                         .boxed();
@@ -115,9 +105,10 @@ impl Client {
 
 #[allow(non_camel_case_types)]
 #[derive(Clone, Debug, Serialize)]
+#[serde(rename_all = "snake_case")]
 pub(crate) enum Params {
-    hash(String),
-    height(u64),
+    Hash(String),
+    Height(u64),
     None(String),
 }
 
@@ -143,7 +134,7 @@ impl NodeCall {
             jsonrpc: JSON_RPC.to_string(),
             id: now_millis(),
             method: BLOCK_GET.to_string(),
-            params: Some(Params::height(height)),
+            params: Some(Params::Height(height)),
         }
     }
     pub(crate) fn transaction(hash: String) -> Self {
@@ -151,14 +142,16 @@ impl NodeCall {
             jsonrpc: JSON_RPC.to_string(),
             id: now_millis(),
             method: TXN_GET.to_string(),
-            params: Some(Params::hash(hash)),
+            params: Some(Params::Hash(hash)),
         }
     }
 }
 
 fn now_millis() -> String {
-    let ms = SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).unwrap();
-    ms.as_millis().to_string()    
+    let ms = SystemTime::now()
+        .duration_since(SystemTime::UNIX_EPOCH)
+        .unwrap();
+    ms.as_millis().to_string()
 }
 
 #[async_trait]
@@ -176,14 +169,11 @@ mod test {
     #[test]
     async fn txn_err() {
         let client = Client::default();
-        let txn = transactions::get_transaction(&client, 
-            "1gidN7e6OKn405Fru_0sGhsqca3lTsrfGKrM4dwM")
-        .await;
+        let txn = transactions::get(&client, "1gidN7e6OKn405Fru_0sGhsqca3lTsrfGKrM4dwM").await;
         let er = match txn {
             Err(e) => format!("{}", e),
             _ => panic!("??"),
         };
         assert_eq!(er, "error code -100 from node: No transaction: <<\"1gidN7e6OKn405Fru_0sGhsqca3lTsrfGKrM4dwM\">>");
-
-    }    
+    }
 }
