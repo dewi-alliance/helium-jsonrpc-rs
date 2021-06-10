@@ -5,7 +5,6 @@ readme = "README.md"
 description = "An async library for the Helium blockchain-node JSON_RPC interface"
 authors = ["Kyle Bales <masterjedi@gmail.com>"]
 edition = "2018"
-license = "Apache-2.0"
 license-file = "LICENSE"
 
 [dependencies]
