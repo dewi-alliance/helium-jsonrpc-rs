@@ -1,6 +1,6 @@
 # helium-jsonrpc-client
 
-An async library for Helium's[blockchain-node](https://github.com/helium/blockchain-node) using JSON-RPC calls.
+An async library for Helium's [blockchain-node](https://github.com/helium/blockchain-node) using JSON-RPC calls.
 
 ## Overview
 
