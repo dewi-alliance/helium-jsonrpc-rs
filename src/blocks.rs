@@ -10,6 +10,7 @@ pub struct Block {
     pub hash: String,
     pub prev_hash: String,
     pub time: u64,
+    #[serde(rename = "transactions")]
     pub transaction_hashes: Vec<String>,
 }
 
