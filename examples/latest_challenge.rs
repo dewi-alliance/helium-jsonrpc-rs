@@ -4,19 +4,19 @@ use helium_jsonrpc::{blocks, transactions, transactions::Transaction, Client};
 async fn main() {
     let gateway = "11xzD6yrWF2e3oZcLLD6GhjZS7seFoDrG85xqHGxAUUgy4SZCRb";
 
-    let client = Client::new_with_base_url("http://192.168.1.12:4467".to_string());
+    let client = Client::new_with_base_url("http://localhost:4467".to_string());
 
     let mut current_height = blocks::height(&client).await.unwrap();
 
     loop {
-        let block = match blocks::get(&client, &current_height).await {
+        let block_raw = match blocks::get_raw(&client, &current_height).await {
             Ok(b) => b,
             Err(_) => {
                 panic!("Didn't find challenge..")
             }
         };
 
-        let txns = block.transaction_hashes;
+        let txns = block_raw.transactions;
 
         for tx_hash in txns.iter() {
             let _tx = match transactions::get(&client, tx_hash).await {

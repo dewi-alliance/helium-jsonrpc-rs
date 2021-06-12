@@ -4,7 +4,7 @@ use helium_jsonrpc::{blocks, transactions::Transaction, Client};
 //was when the node was first started. May take a while if the node has been running for a long time.
 #[tokio::main]
 async fn main() {
-    let client = Client::new_with_base_url("http://192.168.2.23:4467".to_string());
+    let client = Client::new_with_base_url("http://localhost:4467".to_string());
     let first_height = find_first_block(&client).await;
 
     println!("First block: {}", first_height);
@@ -25,22 +25,14 @@ async fn find_first_block(client: &Client) -> u64 {
                 blocks::get(&client, &current_height).await.unwrap()
             }
         };
-        let res = block.transactions(&client).await;
-        if let Ok(txns) = res {
-            let _ = txns.iter().for_each(|txn| match txn {
-                Transaction::RewardsV2 { start_epoch, .. } => {
-                    current_height = *start_epoch;
-                }
-                _ => {
-                    last_safe_height = current_height;
-                }
-            });
-        } else {
-            println!(
-                "Error fetching transactions for block: {}: {:?}",
-                block.height, res
-            );
-        }
+        block.transactions.iter().for_each(|txn| match txn {
+            Transaction::RewardsV2 { start_epoch, .. } => {
+                current_height = *start_epoch;
+            }
+            _ => {
+                last_safe_height = current_height;
+            }
+        });
 
         current_height -= 1;
     }
