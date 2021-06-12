@@ -50,7 +50,7 @@ pub async fn get(client: &Client, height: &u64) -> Result<Block> {
         hash: raw.hash.to_owned(),
         prev_hash: raw.prev_hash.to_owned(),
         time: raw.time.to_owned(),
-        transactions: txns.to_owned(),
+        transactions: txns,
     })
 }
 

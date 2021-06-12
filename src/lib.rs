@@ -1,11 +1,8 @@
 use async_trait::async_trait;
-use futures::{future, Future as StdFuture, FutureExt, TryFutureExt};
+use futures::TryFutureExt;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
+use std::time::Duration;
 use std::time::SystemTime;
-use std::{pin::Pin, time::Duration};
-
-/// A type alias for `Future` that may return `crate::error::Error`
-pub type Future<T> = Pin<Box<dyn StdFuture<Output = Result<T>> + Send>>;
 
 pub mod error;
 
@@ -72,34 +69,26 @@ impl Client {
         Self { base_url, client }
     }
 
-    pub(crate) fn post<T, R>(&self, path: &str, json: &T) -> Future<Result<R>>
+    pub(crate) async fn post<T, R>(&self, path: &str, json: &T) -> Result<Result<R>>
     where
         T: Serialize + ?Sized,
         R: 'static + DeserializeOwned + std::marker::Send,
     {
         let request_url = format!("{}{}", self.base_url, path);
-        self.client
+        let response = self
+            .client
             .post(&request_url)
             .json(json)
             .send()
             .map_err(error::Error::from)
-            .and_then(|response| match response.error_for_status() {
-                Ok(result) => {
-                    let data: Future<Result<R>> = result
-                        .json()
-                        .map_err(error::Error::from)
-                        .map_ok(|v: Response<R>| match v {
-                            Response::Data { result, .. } => Ok(result),
-                            Response::Error { error, .. } => {
-                                Err(Error::NodeError(error.message, error.code))
-                            }
-                        })
-                        .boxed();
-                    data
-                }
-                Err(e) => future::err(error::Error::from(e)).boxed(),
-            })
-            .boxed()
+            .await?;
+
+        let response = response.error_for_status().map_err(error::Error::from)?;
+        let v: Response<R> = response.json().await.map_err(error::Error::from)?;
+        Ok(match v {
+            Response::Data { result, .. } => Ok(result),
+            Response::Error { error, .. } => Err(Error::NodeError(error.message, error.code)),
+        })
     }
 }
 
