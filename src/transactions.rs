@@ -51,9 +51,23 @@ pub struct Reward {
 }
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
+pub struct RoutingAction {
+    index: u64,
+    action: String,
+    filter: String,
+}
+
+#[derive(Clone, Serialize, Deserialize, Debug)]
 #[serde(tag = "type", rename_all = "snake_case")]
 /// Represents a transaction response from blockchain-node.
 pub enum Transaction {
+    ConsensusGroupV1 {
+        delay: u64,
+        hash: String,
+        height: u64,
+        members: Vec<String>,
+        proof: String,
+    },
     PocRequestV1 {
         hash: String,
         block_hash: String,
@@ -88,6 +102,12 @@ pub enum Transaction {
         payee: String,
     },
     RewardsV2 {
+        hash: String,
+        start_epoch: u64,
+        end_epoch: u64,
+        rewards: Vec<Reward>,
+    },
+    RewardsV1 {
         hash: String,
         start_epoch: u64,
         end_epoch: u64,
@@ -132,13 +152,129 @@ pub enum Transaction {
         buyer_nonce: u64,
         amount_to_seller: u64,
     },
-    PriceOracleV1 {
-        hash: String,
+    CreateHtlcV1 {
         fee: u64,
+        hash: String,
+        nonce: u64,
+        payee: String,
+        payer: String,
+        amount: u64,
+        address: String,
+        hashlock: String,
+        timelock: u64,
+    },
+    GenGatewayV1 {
+        hash: String,
+        nonce: u64,
+        owner: String,
+        gateway: String,
+        location: String,
+    },
+    OuiV1 {
+        fee: u64,
+        oui: u64,
+        hash: String,
+        owner: String,
+        payer: String,
+        filter: String,
+        addresses: Vec<String>,
+        staking_fee: u64,
+        requested_subnet_size: u64,
+    },
+    RedeemHtlcV1 {
+        fee: u64,
+        hash: String,
+        payee: String,
+        address: String,
+        preimage: String,
+    },
+    SecurityCoinbaseV1 {
+        hash: String,
+        payee: String,
+        amount: u64,
+    },
+    RoutingV1 {
+        fee: u64,
+        oui: u64,
+        hash: String,
+        nonce: u64,
+        owner: String,
+        action: RoutingAction,
+    },
+    SecurityExchangeV1 {
+        fee: u64,
+        hash: String,
+        nonce: u64,
+        payee: String,
+        payer: String,
+        amount: u64,
+    },
+    VarsV1 {
+        hash: String,
+        // skip vars for now
+        nonce: u64,
+        proof: String,
+    },
+    TokenBurnV1 {
+        fee: u64,
+        hash: String,
+        memo: String,
+        nonce: u64,
+        payee: String,
+        payer: String,
+        amount: u64,
+    },
+    DcCoinbaseV1 {
+        hash: String,
+        payee: String,
+        amount: u64,
+    },
+    StateChannelOpenV1 {
+        id: String,
+        fee: u64,
+        oui: u64,
+        hash: String,
+        nonce: u64,
+        owner: String,
+        amount: u64,
+        expire_within: u64,
+    },
+    StateChannelCloseV1 {
+        hash: String,
+        closer: String,
+        //this is incomplete
+    },
+    PriceOracleV1 {
+        fee: u64,
+        hash: String,
+        price: u64,
+        public_key: String,
+        block_height: u64,
+    },
+    // no examples found on blockchain. inferred from proto source code
+    CoinbaseV1 {
+        hash: String,
+        payee: String,
+        amount: u64,
+    },
+    TokenBurnExchangeRateV1 {
+        hash: String,
+        rate: u64,
+    },
+    UpdateGatewayOuiV1 {
+        gateway: String,
+        hash: String,
+        oui: u64,
+        nonce: u64,
+        fee: u64,
+        gateway_owner_signature: String,
+        oui_owner_signature: String,
+    },
+    GenPriceOracleV1 {
+        hash: String,
         price: u64,
     },
-    #[serde(other)]
-    Other,
+    // not supported: BundleV1
 }
 
 /// Get a specifyc transaction by hash
@@ -165,6 +301,17 @@ mod test {
                 assert_eq!(block_hash, "RS2mBvd_4pbKCglkkyMroDQekPNO0xDdYx6Te3HGDGg")
             }
             _ => (),
+        }
+    }
+    #[test]
+    async fn consensus_group_v1() {
+        let client = Client::default();
+        let txn = transactions::get(&client, "yh01SJk8dvyqb-BGXxkHFUuLi6wF1pfL0VEFStJUt-E")
+            .await
+            .expect("ConsensusGroupV1");
+        match txn {
+            Transaction::ConsensusGroupV1 { hash, .. } => assert_eq!(hash, "yh01SJk8dvyqb-BGXxkHFUuLi6wF1pfL0VEFStJUt-E"),
+            _ => panic!("Didn't find ConsensusGroupV1"),
         }
     }
     #[test]
