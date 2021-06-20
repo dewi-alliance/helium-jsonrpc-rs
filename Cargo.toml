@@ -3,7 +3,7 @@ name = "helium-jsonrpc"
 version = "1.0.1"
 readme = "README.md"
 description = "An async library for the Helium blockchain-node JSON_RPC interface"
-authors = ["Kyle Bales <masterjedi@gmail.com>"]
+authors = ["Kyle Bales <masterjedi@gmail.com>", "Chris Bruce <chris@dewi.org"]
 edition = "2018"
 license-file = "LICENSE"
 
