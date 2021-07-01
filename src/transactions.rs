@@ -251,6 +251,21 @@ pub enum Transaction {
         public_key: String,
         block_height: u64,
     },
+    ValidatorHeartbeatV1 {
+        address: String,
+        hash: String,
+        height: u64,
+        signature: String,
+        version: u64,
+    },
+    StakeValidatorV1 {
+        address: String,
+        fee: u64,
+        hash: String,
+        owner: String,
+        stake: u64,
+        owner_signature: String,
+    },
     // no examples found on blockchain. inferred from proto source code
     CoinbaseV1 {
         hash: String,
