@@ -4,57 +4,57 @@ use serde_json::json;
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct PaymentV2Payment {
-    amount: u64,
-    memo: Option<String>,
-    payee: String,
+    pub amount: u64,
+    pub memo: Option<String>,
+    pub payee: String,
 }
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct Witness {
-    channel: u8,
-    datarate: String,
-    frequency: f64,
-    gateway: String,
-    is_valid: bool,
-    packet_hash: String,
-    signal: i64,
-    snr: f64,
-    timestamp: u64,
+    pub channel: u8,
+    pub datarate: String,
+    pub frequency: f64,
+    pub gateway: String,
+    pub is_valid: bool,
+    pub packet_hash: String,
+    pub signal: i64,
+    pub snr: f64,
+    pub timestamp: u64,
 }
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct Receipt {
-    channel: u8,
-    data: String,
-    datarate: Option<String>,
-    frequency: f64,
-    gateway: String,
-    origin: String,
-    signal: i64,
-    snr: f64,
-    timestamp: u64,
+    pub channel: u8,
+    pub data: String,
+    pub datarate: Option<String>,
+    pub frequency: f64,
+    pub gateway: String,
+    pub origin: String,
+    pub signal: i64,
+    pub snr: f64,
+    pub timestamp: u64,
 }
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct PathElement {
-    challengee: String,
-    receipt: Option<Receipt>,
-    witnesses: Vec<Witness>,
+    pub challengee: String,
+    pub receipt: Option<Receipt>,
+    pub witnesses: Vec<Witness>,
 }
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct Reward {
-    account: Option<String>,
-    amount: u64,
-    gateway: Option<String>,
-    r#type: String,
+    pub account: Option<String>,
+    pub amount: u64,
+    pub gateway: Option<String>,
+    pub r#type: String,
 }
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct RoutingAction {
-    index: u64,
-    action: String,
-    filter: String,
+    pub index: u64,
+    pub action: String,
+    pub filter: String,
 }
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
