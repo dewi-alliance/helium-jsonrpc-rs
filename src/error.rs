@@ -20,6 +20,8 @@ pub enum Error {
     Number(String),
     #[error("error code {1} from node: {0}")]
     NodeError(String, i32),
+    #[error("error deserializing JSON response")]
+    JsonDeserialization(#[from] serde_json::Error),
 }
 
 impl Error {
