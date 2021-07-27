@@ -125,13 +125,6 @@ impl NodeCall {
     }
 }
 
-
-#[derive(Clone, Deserialize, Debug, Serialize)]
-struct UnlockParams {
-    address: String,
-    password: String,
-}
-
 #[derive(Clone, Deserialize, Debug, Serialize)]
 struct BlockParams {
     height: u64
