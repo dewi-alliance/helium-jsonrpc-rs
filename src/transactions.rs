@@ -1,6 +1,5 @@
 use crate::*;
 use serde::{Deserialize, Serialize};
-use serde_json::json;
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct PaymentV2Payment {
@@ -294,10 +293,9 @@ pub enum Transaction {
 
 /// Get a specifyc transaction by hash
 pub async fn get(client: &Client, hash: &str) -> Result<Transaction> {
-    let json = json!(NodeCall::transaction(hash.to_string()));
+    let json = NodeCall::transaction(hash.to_string());
     let url_path = "/";
-
-    client.post(&url_path, &json).await?
+    client.post(&url_path, &json).await
 }
 
 #[cfg(test)]
