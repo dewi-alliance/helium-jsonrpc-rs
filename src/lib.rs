@@ -16,19 +16,6 @@ pub const DEFAULT_BASE_URL: &str = "http://127.0.0.1:4467";
 /// JSON RPC version
 pub const JSON_RPC: &str = "2.0";
 
-#[derive(Clone, Serialize, Deserialize, Debug)]
-#[serde(untagged)]
-pub(crate) enum Response<T> {
-    Data { result: T, id: String },
-    Error { id: String, error: ErrorElement },
-}
-
-#[derive(Clone, Serialize, Deserialize, Debug)]
-pub(crate) struct ErrorElement {
-    message: String,
-    code: i32,
-}
-
 #[derive(Clone, Debug)]
 pub struct Client {
     base_url: String,
@@ -61,34 +48,31 @@ impl Client {
         Self { base_url, client }
     }
 
-    async fn post<T: DeserializeOwned, D: Serialize>(
-        &self,
-        path: &str,
-        data: D,
-    ) -> Result<T> {
+    async fn post<T: DeserializeOwned, D: Serialize>(&self, path: &str, data: D) -> Result<T> {
+        #[derive(Clone, Serialize, Deserialize, Debug)]
+        #[serde(untagged)]
+        pub(crate) enum Response<T> {
+            Data { result: T, id: String },
+            Error { id: String, error: Error },
+        }
+
+        #[derive(Clone, Serialize, Deserialize, Debug)]
+        pub(crate) struct Error {
+            message: String,
+            code: isize,
+        }
+
         let request_url = format!("{}{}", self.base_url, path);
         let request = self.client.post(&request_url).json(&data);
         let response = request.send().await?;
         let body = response.text().await?;
-        #[derive(Deserialize)]
-        struct JsonRpcResult<T> {
-            error: Option<JsonRpcError>,
-            result: Option<T>,
-        }
-        #[derive(Deserialize)]
-        struct JsonRpcError {
-            code: isize,
-            message: String
-        }
 
-        let response: JsonRpcResult<T> = serde_json::from_str(&body)?;
-
-        if let Some(error) = response.error {
-            Err(Error::NodeError(error.message, error.code))
-        } else if let Some(result) = response.result {
-            Ok(result)
-        } else {
-            Err(Error::NodeResponseNoResult)
+        let v: Response<T> = serde_json::from_str(&body)?;
+        match v {
+            Response::Data { result, .. } => Ok(result),
+            Response::Error { error, .. } => {
+                Err(error::Error::NodeError(error.message, error.code))
+            }
         }
     }
 }
