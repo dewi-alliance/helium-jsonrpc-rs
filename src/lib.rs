@@ -13,10 +13,7 @@ pub mod transactions;
 pub const DEFAULT_TIMEOUT: u64 = 120;
 /// The default base URL if none is specified.
 pub const DEFAULT_BASE_URL: &str = "http://127.0.0.1:4467";
-/// A utility constant to pass an empty query slice to the various client fetch
-/// functions
-pub const NO_QUERY: &[&str; 0] = &[""; 0];
-
+/// JSON RPC version
 pub const JSON_RPC: &str = "2.0";
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
@@ -73,8 +70,26 @@ impl Client {
         let request = self.client.post(&request_url).json(&data);
         let response = request.send().await?;
         let body = response.text().await?;
-        let result: T = serde_json::from_str(&body)?;
-        Ok(result)
+        #[derive(Deserialize)]
+        struct JsonRpcResult<T> {
+            error: Option<JsonRpcError>,
+            result: Option<T>,
+        }
+        #[derive(Deserialize)]
+        struct JsonRpcError {
+            code: isize,
+            message: String
+        }
+
+        let response: JsonRpcResult<T> = serde_json::from_str(&body)?;
+
+        if let Some(error) = response.error {
+            Err(Error::NodeError(error.message, error.code))
+        } else if let Some(result) = response.result {
+            Ok(result)
+        } else {
+            Err(Error::NodeResponseNoResult)
+        }
     }
 }
 
@@ -91,7 +106,7 @@ fn now_millis() -> String {
 enum Method {
     WalletList,
     BlockHeight,
-    Block { params: BlockParams },
+    BlockGet { params: BlockParams },
     TransactionGet { params: TransactionParam },
 }
 
@@ -117,7 +132,7 @@ impl NodeCall {
     }
 
     pub(crate) fn block(height: u64) -> Self {
-        Self::new( Method::Block { params: BlockParams { height }})
+        Self::new( Method::BlockGet { params: BlockParams { height }})
     }
 
     pub(crate) fn transaction(hash: String) -> Self {
