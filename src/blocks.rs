@@ -10,15 +10,22 @@ pub struct BlockRaw {
     pub hash: String,
     pub prev_hash: String,
     pub time: u64,
-    pub transactions: Vec<String>,
+    pub transactions: Vec<BlockTransaction>,
+}
+
+#[derive(Clone, Serialize, Deserialize, Debug)]
+/// Represents transaction in 'block_height' response from blockchain-node
+pub struct BlockTransaction {
+    pub hash: String,
+    pub r#type: String,
 }
 
 impl BlockRaw {
     /// Returns all the transactions in this block
     pub async fn get_transactions(&self, client: &Client) -> Result<Vec<Transaction>> {
         let mut txns: Vec<Transaction> = Vec::new();
-        for hash in &self.transactions {
-            txns.push(transactions::get(client, &hash).await?);
+        for txn in &self.transactions {
+            txns.push(transactions::get(client, &txn.hash).await?);
         }
 
         Ok(txns)
