@@ -22,7 +22,10 @@ async fn find_first_block(client: &Client) -> u64 {
             Err(_) => {
                 in_last_epoch = true;
                 current_height = last_safe_height - 1;
-                blocks::get(&client, &current_height).await.unwrap()
+                match blocks::get(&client, &current_height).await {
+                    Ok(b) => b,
+                    Err(e) => panic!("error getting block: {}", current_height),
+                }
             }
         };
         block.transactions.iter().for_each(|txn| match txn {
