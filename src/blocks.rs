@@ -20,7 +20,6 @@ impl BlockRaw {
         for hash in &self.transactions {
             txns.push(transactions::get(client, &hash).await?);
         }
-
         Ok(txns)
     }
 }
@@ -38,7 +37,7 @@ pub struct Block {
 /// Get the current height of the blockchain
 pub async fn height(client: &Client) -> Result<u64> {
     let json = json!(NodeCall::height());
-    client.post("/", &json).await?
+    client.post("/", &json).await
 }
 
 /// Gets a full block (with complete transactions) at a specific block height.
@@ -59,8 +58,7 @@ pub async fn get(client: &Client, height: &u64) -> Result<Block> {
 pub async fn get_raw(client: &Client, height: &u64) -> Result<BlockRaw> {
     let json = json!(NodeCall::block(*height));
     let url_path = "/";
-
-    client.post(&url_path, &json).await?
+    client.post(&url_path, &json).await
 }
 
 #[cfg(test)]

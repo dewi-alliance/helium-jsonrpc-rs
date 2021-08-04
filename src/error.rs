@@ -19,7 +19,11 @@ pub enum Error {
     #[error("unexpected or invalid number {0}")]
     Number(String),
     #[error("error code {1} from node: {0}")]
-    NodeError(String, i32),
+    NodeError(String, isize),
+    #[error("error deserializing JSON response")]
+    JsonDeserialization(#[from] serde_json::Error),
+    #[error("node response with no error but no result")]
+    NodeResponseNoResult
 }
 
 impl Error {
