@@ -1,5 +1,4 @@
 use async_trait::async_trait;
-use futures::TryFutureExt;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use std::time::Duration;
 use std::time::SystemTime;
@@ -14,28 +13,8 @@ pub mod transactions;
 pub const DEFAULT_TIMEOUT: u64 = 120;
 /// The default base URL if none is specified.
 pub const DEFAULT_BASE_URL: &str = "http://127.0.0.1:4467";
-/// A utility constant to pass an empty query slice to the various client fetch
-/// functions
-pub const NO_QUERY: &[&str; 0] = &[""; 0];
-
+/// JSON RPC version
 pub const JSON_RPC: &str = "2.0";
-
-pub const BLOCK_HEIGHT: &str = "block_height";
-pub const BLOCK_GET: &str = "block_get";
-pub const TXN_GET: &str = "transaction_get";
-
-#[derive(Clone, Serialize, Deserialize, Debug)]
-#[serde(untagged)]
-pub(crate) enum Response<T> {
-    Data { result: T, id: String },
-    Error { id: String, error: ErrorElement },
-}
-
-#[derive(Clone, Serialize, Deserialize, Debug)]
-pub(crate) struct ErrorElement {
-    message: String,
-    code: i32,
-}
 
 #[derive(Clone, Debug)]
 pub struct Client {
@@ -69,69 +48,31 @@ impl Client {
         Self { base_url, client }
     }
 
-    pub(crate) async fn post<T, R>(&self, path: &str, json: &T) -> Result<Result<R>>
-    where
-        T: Serialize + ?Sized,
-        R: 'static + DeserializeOwned + std::marker::Send,
-    {
+    async fn post<T: DeserializeOwned, D: Serialize>(&self, path: &str, data: D) -> Result<T> {
+        #[derive(Clone, Serialize, Deserialize, Debug)]
+        #[serde(untagged)]
+        pub(crate) enum Response<T> {
+            Data { result: T, id: String },
+            Error { id: String, error: Error },
+        }
+
+        #[derive(Clone, Serialize, Deserialize, Debug)]
+        pub(crate) struct Error {
+            message: String,
+            code: isize,
+        }
+
         let request_url = format!("{}{}", self.base_url, path);
-        let response = self
-            .client
-            .post(&request_url)
-            .json(json)
-            .send()
-            .map_err(error::Error::from)
-            .await?;
+        let request = self.client.post(&request_url).json(&data);
+        let response = request.send().await?;
+        let body = response.text().await?;
 
-        let response = response.error_for_status().map_err(error::Error::from)?;
-        let v: Response<R> = response.json().await.map_err(error::Error::from)?;
-        Ok(match v {
+        let v: Response<T> = serde_json::from_str(&body)?;
+        match v {
             Response::Data { result, .. } => Ok(result),
-            Response::Error { error, .. } => Err(Error::NodeError(error.message, error.code)),
-        })
-    }
-}
-
-#[allow(non_camel_case_types)]
-#[derive(Clone, Debug, Serialize)]
-#[serde(rename_all = "snake_case")]
-pub(crate) enum Params {
-    Hash(String),
-    Height(u64),
-    None(String),
-}
-
-#[derive(Clone, Debug, Serialize)]
-pub(crate) struct NodeCall {
-    jsonrpc: String,
-    id: String,
-    method: String,
-    params: Option<Params>,
-}
-
-impl NodeCall {
-    pub(crate) fn height() -> Self {
-        NodeCall {
-            jsonrpc: JSON_RPC.to_string(),
-            id: now_millis(),
-            method: BLOCK_HEIGHT.to_string(),
-            params: Some(Params::None("null".to_string())),
-        }
-    }
-    pub(crate) fn block(height: u64) -> Self {
-        NodeCall {
-            jsonrpc: JSON_RPC.to_string(),
-            id: now_millis(),
-            method: BLOCK_GET.to_string(),
-            params: Some(Params::Height(height)),
-        }
-    }
-    pub(crate) fn transaction(hash: String) -> Self {
-        NodeCall {
-            jsonrpc: JSON_RPC.to_string(),
-            id: now_millis(),
-            method: TXN_GET.to_string(),
-            params: Some(Params::Hash(hash)),
+            Response::Error { error, .. } => {
+                Err(error::Error::NodeError(error.message, error.code))
+            }
         }
     }
 }
@@ -141,6 +82,56 @@ fn now_millis() -> String {
         .duration_since(SystemTime::UNIX_EPOCH)
         .unwrap();
     ms.as_millis().to_string()
+}
+
+#[derive(Clone, Deserialize, Debug, Serialize)]
+#[serde(tag = "method")]
+#[serde(rename_all = "snake_case")]
+enum Method {
+    WalletList,
+    BlockHeight,
+    BlockGet { params: BlockParams },
+    TransactionGet { params: TransactionParam },
+}
+
+
+#[derive(Clone, Deserialize, Debug, Serialize)]
+pub(crate) struct NodeCall {
+    jsonrpc: String,
+    id: String,
+    #[serde(flatten)]
+    method: Method,
+}
+impl NodeCall {
+    fn new(request: Method) -> NodeCall {
+        NodeCall {
+            jsonrpc: JSON_RPC.to_string(),
+            id: now_millis(),
+            method: request,
+        }
+    }
+
+    pub(crate) fn height() -> Self {
+        Self::new(Method::BlockHeight)
+    }
+
+    pub(crate) fn block(height: u64) -> Self {
+        Self::new( Method::BlockGet { params: BlockParams { height }})
+    }
+
+    pub(crate) fn transaction(hash: String) -> Self {
+        Self::new(Method::TransactionGet { params: TransactionParam { hash }})
+    }
+}
+
+#[derive(Clone, Deserialize, Debug, Serialize)]
+struct BlockParams {
+    height: u64
+}
+
+#[derive(Clone, Deserialize, Debug, Serialize)]
+struct TransactionParam {
+    hash: String
 }
 
 #[async_trait]
