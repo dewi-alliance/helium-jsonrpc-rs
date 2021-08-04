@@ -67,6 +67,15 @@ pub enum Transaction {
         members: Vec<String>,
         proof: String,
     },
+    ConsensusGroupFailureV1 {
+        delay: u64,
+        hash: String,
+        block: u64,
+        height: u64,
+        members: Vec<String>,
+        failed_members: Vec<String>,
+        signatures: Vec<String>,
+    },
     PocRequestV1 {
         hash: String,
         block_hash: String,
@@ -264,6 +273,19 @@ pub enum Transaction {
         owner: String,
         stake: u64,
         owner_signature: String,
+    },
+    TransferValidatorStakeV1 {
+        block: u64,
+        fee: u64,
+        hash: String,
+        new_address: String,
+        new_owner: String,
+        new_owner_signature: Option<String>,
+        old_address: String,
+        old_owner: String,
+        old_owner_signature: String,
+        payment_amount: u64,
+        stake_amount: u64,
     },
     // no examples found on blockchain. inferred from proto source code
     CoinbaseV1 {
