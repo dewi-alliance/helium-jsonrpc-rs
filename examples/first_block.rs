@@ -24,7 +24,7 @@ async fn find_first_block(client: &Client) -> u64 {
                 current_height = last_safe_height - 1;
                 match blocks::get(&client, &current_height).await {
                     Ok(b) => b,
-                    Err(e) => panic!("error getting block: {}", current_height),
+                    Err(e) => panic!("error getting block {}: {}", current_height, e),
                 }
             }
         };
