@@ -18,14 +18,14 @@ async fn main() {
 
         let txns = block_raw.transactions;
 
-        for tx_hash in txns.iter() {
-            let _tx = match transactions::get(&client, tx_hash).await {
+        for txn in txns.iter() {
+            let _tx = match transactions::get(&client, &txn.hash).await {
                 Ok(tx) => match tx {
                     Transaction::PocRequestV1 { challenger, .. } => {
                         if challenger == gateway {
                             println!(
                                 "Most recent challenge issued at block {}. tx {}",
-                                current_height, tx_hash
+                                current_height, txn.hash
                             );
                             return;
                         }
@@ -34,7 +34,7 @@ async fn main() {
                     _ => Ok(()),
                 },
                 Err(e) => {
-                    println!("Error with txn: {}: {:?}", tx_hash, e);
+                    println!("Error with txn: {}: {:?}", txn.hash, e);
                     Err(e)
                 }
             };
