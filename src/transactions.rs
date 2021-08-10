@@ -52,19 +52,10 @@ pub struct Reward {
 #[derive(Clone, Serialize, Deserialize, Debug)]
 #[serde(tag = "action", rename_all = "snake_case")]
 pub enum RoutingAction {
-    NewXor {
-        filter: String,
-    },
-    UpdateXor {
-        filter: String,
-        index: usize,
-    },
-    UpdateRouters {
-        addresses: Vec<String>,
-    },
-    RequestSubnet {
-        requested_subnet_size: u64,
-    },
+    NewXor { filter: String },
+    UpdateXor { filter: String, index: usize },
+    UpdateRouters { addresses: Vec<String> },
+    RequestSubnet { requested_subnet_size: u64 },
 }
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
@@ -342,11 +333,10 @@ mod test {
         let txn = transactions::get(&client, "1gidN7e6OKn405Fru_0sGhsqca3lTsrfGKrM4dwM_E8")
             .await
             .expect("PocRequestV1");
-        match txn {
-            Transaction::PocRequestV1 { block_hash, .. } => {
-                assert_eq!(block_hash, "RS2mBvd_4pbKCglkkyMroDQekPNO0xDdYx6Te3HGDGg")
-            }
-            _ => (),
+        if let Transaction::PocRequestV1 { block_hash, .. } = txn {
+            assert_eq!(block_hash, "RS2mBvd_4pbKCglkkyMroDQekPNO0xDdYx6Te3HGDGg")
+        } else {
+            assert!(false)
         }
     }
     #[test]
@@ -355,11 +345,10 @@ mod test {
         let txn = transactions::get(&client, "yh01SJk8dvyqb-BGXxkHFUuLi6wF1pfL0VEFStJUt-E")
             .await
             .expect("ConsensusGroupV1");
-        match txn {
-            Transaction::ConsensusGroupV1 { hash, .. } => {
-                assert_eq!(hash, "yh01SJk8dvyqb-BGXxkHFUuLi6wF1pfL0VEFStJUt-E")
-            }
-            _ => panic!("Didn't find ConsensusGroupV1"),
+        if let Transaction::ConsensusGroupV1 { hash, .. } = txn {
+            assert_eq!(hash, "yh01SJk8dvyqb-BGXxkHFUuLi6wF1pfL0VEFStJUt-E")
+        } else {
+            assert!(false)
         }
     }
     #[test]
@@ -369,9 +358,10 @@ mod test {
         let txn = transactions::get(&client, "C_jJZLKBOv_gRQ6P6wEpZPiRVAjf44FOx1iHOFD4haA")
             .await
             .expect("PaymentV2");
-        match txn {
-            Transaction::PaymentV2 { payments, .. } => assert_eq!(payments.len(), 1),
-            _ => (),
+        if let Transaction::PaymentV2 { payments, .. } = txn {
+            assert_eq!(payments.len(), 1)
+        } else {
+            assert!(false)
         }
     }
     #[test]
@@ -380,24 +370,23 @@ mod test {
         let txn = transactions::get(&client, "8RaF-G4pvMVuIXfBYhdqNuIlFSEHPm_rC8TH-h4JYdE")
             .await
             .expect("PocReceipt");
-        match txn {
-            Transaction::PocReceiptsV1 { hash, .. } => {
-                assert_eq!(hash, "8RaF-G4pvMVuIXfBYhdqNuIlFSEHPm_rC8TH-h4JYdE")
-            }
-            _ => (),
+        if let Transaction::PocReceiptsV1 { hash, .. } = txn {
+            assert_eq!(hash, "8RaF-G4pvMVuIXfBYhdqNuIlFSEHPm_rC8TH-h4JYdE")
+        } else {
+            assert!(false)
         }
     }
+
     #[test]
     async fn payment_v1() {
         let client = Client::default();
         let txn = transactions::get(&client, "iMSckt_hUcMFY_d7W-QOupY0MGq_g3-CC2dq3P-HWIw")
             .await
             .expect("PaymentV1");
-        match txn {
-            Transaction::PaymentV1 { payee, .. } => {
-                assert_eq!(payee, "14YeKFGXE23yAdACj6hu5NWEcYzzKxptYbm5jHgzw9A1P1UQfMv")
-            }
-            _ => (),
+        if let Transaction::PaymentV1 { payee, .. } = txn {
+            assert_eq!(payee, "14YeKFGXE23yAdACj6hu5NWEcYzzKxptYbm5jHgzw9A1P1UQfMv")
+        } else {
+            assert!(false)
         }
     }
     #[test]
@@ -406,9 +395,10 @@ mod test {
         let txn = transactions::get(&client, "X0HNRGZ1HAX51CR8qS6LTopAosjFkuaaKXl850IpNDE")
             .await
             .expect("RewardsV2");
-        match txn {
-            Transaction::RewardsV2 { rewards, .. } => assert_eq!(rewards.len(), 10138),
-            _ => (),
+        if let Transaction::RewardsV2 { rewards, .. } = txn {
+            assert_eq!(rewards.len(), 10138)
+        } else {
+            assert!(false)
         }
     }
     #[test]
@@ -417,11 +407,10 @@ mod test {
         let txn = transactions::get(&client, "_I16bycHeltuOo7eyqa4uhv2Bc7awcztZflyvRkVZ24")
             .await
             .expect("AssertLocationV1");
-        match txn {
-            Transaction::AssertLocationV1 { hash, .. } => {
-                assert_eq!(hash, "_I16bycHeltuOo7eyqa4uhv2Bc7awcztZflyvRkVZ24")
-            }
-            _ => (),
+        if let Transaction::AssertLocationV1 { hash, .. } = txn {
+            assert_eq!(hash, "_I16bycHeltuOo7eyqa4uhv2Bc7awcztZflyvRkVZ24")
+        } else {
+            assert!(false)
         }
     }
     #[test]
@@ -430,12 +419,13 @@ mod test {
         let txn = transactions::get(&client, "TfjRv733Q9FBQ1_unw1c9g5ewVmMBuyf7APuyxKEqrw")
             .await
             .expect("AssertLocationV2");
-        match txn {
-            Transaction::AssertLocationV2 { gateway, .. } => assert_eq!(
+        if let Transaction::AssertLocationV2 { gateway, .. } = txn {
+            assert_eq!(
                 gateway,
                 "112WVxXCrCjiKmmDXLDUJuhYGEHMbXobUZe8oJQkHoMHEFa149a"
-            ),
-            _ => (),
+            )
+        } else {
+            assert!(false)
         }
     }
     #[test]
@@ -444,33 +434,51 @@ mod test {
         let txn = transactions::get(&client, "aoTggHSgaBAamuUUrXnY42jDZ5WUBxE0k-tshvfn35E")
             .await
             .expect("AddGatewayV1");
-        match txn {
-            Transaction::AddGatewayV1 { gateway, .. } => assert_eq!(
+        if let Transaction::AddGatewayV1 { gateway, .. } = txn {
+            assert_eq!(
                 gateway,
                 "112uuvztDziVQyLVvBxMsovsSPV5ZXkN6uQ5hrWSaWwV1oEZTZtd"
-            ),
-            _ => (),
+            )
+        } else {
+            assert!(false)
         }
     }
+
+    #[test]
+    async fn add_gateway_v1_error() {
+        let client = Client::default();
+        let txn = transactions::get(&client, "ia3c386ZnlVJorvo60WtXEFxy_0w35ImoIdmnW5lpJ8")
+            .await
+            .expect("AddGatewayV1");
+        if let Transaction::AddGatewayV1 { gateway, .. } = txn {
+            assert_eq!(
+                gateway,
+                "112uuvztDziVQyLVvBxMsovsSPV5ZXkN6uQ5hrWSaWwV1oEZTZtd"
+            )
+        } else {
+            assert!(false)
+        }
+    }
+
     #[test]
     async fn transfer_hotspot_v1() {
         let client = Client::default();
         let txn = transactions::get(&client, "fSFua7A8G41K05QXAvJi5N2OB0QqmQ7xp7u-My4rYHc")
             .await
             .expect("TransferHotspotV1");
-        match txn {
-            Transaction::TransferHotspotV1 { seller, .. } => assert_eq!(
+        if let Transaction::TransferHotspotV1 { seller, .. } = txn {
+            assert_eq!(
                 seller,
                 "14mo9fFGKYFaWh7xscpDLg7misWcuU5xqR8mc8gHr4c43nDnzeX"
-            ),
-            _ => (),
+            )
+        } else {
+            assert!(false)
         }
     }
 
     #[test]
     async fn transfer_routing_v1_new_xor() {
-        //let client = Client::default();
-        let client = Client::new_with_base_url("http://127.0.0.1:4467".into());
+        let client = Client::default();
 
         let txn = transactions::get(&client, "EjL6nBsSxovJluW-kdAaPcEiRt0OPIATOmlHD1Lth4Y")
             .await
