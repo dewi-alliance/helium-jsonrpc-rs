@@ -23,7 +23,7 @@ pub enum Error {
     #[error("error deserializing JSON response")]
     JsonDeserialization(#[from] serde_json::Error),
     #[error("node response with no error but no result")]
-    NodeResponseNoResult
+    NodeResponseNoResult,
 }
 
 impl Error {
