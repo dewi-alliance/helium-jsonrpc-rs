@@ -50,10 +50,21 @@ pub struct Reward {
 }
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
-pub struct RoutingAction {
-    pub index: u64,
-    pub action: String,
-    pub filter: String,
+#[serde(tag = "action", rename_all = "snake_case")]
+pub enum RoutingAction {
+    NewXor {
+        filter: String,
+    },
+    UpdateXor {
+        filter: String,
+        index: usize,
+    },
+    UpdateRouters {
+        addresses: Vec<String>,
+    },
+    RequestSubnet {
+        requested_subnet_size: u64,
+    },
 }
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
@@ -345,7 +356,9 @@ mod test {
             .await
             .expect("ConsensusGroupV1");
         match txn {
-            Transaction::ConsensusGroupV1 { hash, .. } => assert_eq!(hash, "yh01SJk8dvyqb-BGXxkHFUuLi6wF1pfL0VEFStJUt-E"),
+            Transaction::ConsensusGroupV1 { hash, .. } => {
+                assert_eq!(hash, "yh01SJk8dvyqb-BGXxkHFUuLi6wF1pfL0VEFStJUt-E")
+            }
             _ => panic!("Didn't find ConsensusGroupV1"),
         }
     }
@@ -451,6 +464,39 @@ mod test {
                 "14mo9fFGKYFaWh7xscpDLg7misWcuU5xqR8mc8gHr4c43nDnzeX"
             ),
             _ => (),
+        }
+    }
+
+    #[test]
+    async fn transfer_routing_v1_new_xor() {
+        //let client = Client::default();
+        let client = Client::new_with_base_url("http://127.0.0.1:4467".into());
+
+        let txn = transactions::get(&client, "EjL6nBsSxovJluW-kdAaPcEiRt0OPIATOmlHD1Lth4Y")
+            .await
+            .expect("RoutingV1");
+
+        if let Transaction::RoutingV1 {
+            fee: _,
+            oui,
+            hash: _,
+            nonce: _,
+            owner,
+            action,
+        } = txn
+        {
+            assert_eq!(oui, 12,);
+            assert_eq!(
+                owner,
+                "112ewJNEUfSg3Jvo276tMjzFC2JzmmZcJJ32CWz2fzYqbyCMMTe1",
+            );
+            if let RoutingAction::NewXor { filter } = action {
+                assert_eq!(filter, "wVwCiewtCpELAAAAAAAAAAAAAAAAAAAAf2gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+            } else {
+                assert!(false)
+            }
+        } else {
+            assert!(false)
         }
     }
 }
