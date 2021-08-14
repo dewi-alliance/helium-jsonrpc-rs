@@ -14,7 +14,7 @@ pub struct Witness {
     pub datarate: String,
     pub frequency: f64,
     pub gateway: String,
-    pub is_valid: bool,
+    pub is_valid: Option<bool>,
     pub packet_hash: String,
     pub signal: i64,
     pub snr: f64,
@@ -289,6 +289,15 @@ pub enum Transaction {
         payment_amount: u64,
         stake_amount: u64,
     },
+    UnstakeValidatorV1 {
+        address: String,
+        owner: String,
+        owner_signature: String,
+        fee: u64,
+        stake_amount: u64,
+        stake_release_height: u64,
+        hash: String,
+    },
     // no examples found on blockchain. inferred from proto source code
     CoinbaseV1 {
         hash: String,
@@ -482,7 +491,7 @@ mod test {
 
         let txn = transactions::get(&client, "EjL6nBsSxovJluW-kdAaPcEiRt0OPIATOmlHD1Lth4Y")
             .await
-            .expect("RoutingV1");
+            .expect("RoutingV1_NewXor");
 
         if let Transaction::RoutingV1 {
             fee: _,
@@ -493,7 +502,7 @@ mod test {
             action,
         } = txn
         {
-            assert_eq!(oui, 12,);
+            assert_eq!(oui, 12);
             assert_eq!(
                 owner,
                 "112ewJNEUfSg3Jvo276tMjzFC2JzmmZcJJ32CWz2fzYqbyCMMTe1",
@@ -503,6 +512,32 @@ mod test {
             } else {
                 assert!(false)
             }
+        } else {
+            assert!(false)
+        }
+    }
+
+    #[test]
+    async fn unstake_validator_v1() {
+        let client = Client::default();
+
+        let txn = transactions::get(&client, "fMT-7_f2WQNKAYIQWX2-V258KsoI61HYbt_zAbN3A1I")
+            .await
+            .expect("UnstakeValidatorv1");
+
+        if let Transaction::UnstakeValidatorV1 {
+            address,
+            owner: _owner,
+            owner_signature: _own_signature,
+            fee,
+            stake_amount,
+            stake_release_height: _stake_release_height,
+            hash: _hash,
+        } = txn
+        {
+            assert_eq!(address, "11cY9Ly5H3hU4Ai2k7G9niHLAxsKb1ragQYGLJ7E9vh4Vnx6Efb");
+            assert_eq!(stake_amount, 1000000000000);
+            assert_eq!(fee, 35000);
         } else {
             assert!(false)
         }
