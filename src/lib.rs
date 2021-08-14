@@ -66,6 +66,7 @@ impl Client {
         let request = self.client.post(&request_url).json(&data);
         let response = request.send().await?;
         let body = response.text().await?;
+        println!("{}", body);
         let v: Response<T> = serde_json::from_str(&body)?;
         match v {
             Response::Data { result, .. } => Ok(result),
