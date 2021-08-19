@@ -1,4 +1,4 @@
-use helium_jsonrpc::{transactions, transactions::Transaction, Client};
+use helium_jsonrpc::{transactions, Client, Transaction};
 
 #[tokio::main]
 async fn main() {

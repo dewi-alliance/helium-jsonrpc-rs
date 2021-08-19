@@ -1,7 +1,7 @@
 use crate::*;
+use helium_api::models::Transaction;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
-use transactions::Transaction;
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
 /// Represents a block response from blockchain-node.
