@@ -464,7 +464,7 @@ mod test {
         if let Transaction::AddGatewayV1 { gateway, .. } = txn {
             assert_eq!(
                 gateway,
-                "112uuvztDziVQyLVvBxMsovsSPV5ZXkN6uQ5hrWSaWwV1oEZTZtd"
+                "11GPcDmZGniewReZCnpC3SM19Jcw1sQU8W8CUnd7TCh4A6RmEkV"
             )
         } else {
             assert!(false)
