@@ -66,7 +66,6 @@ impl Client {
         let request = self.client.post(&request_url).json(&data);
         let response = request.send().await?;
         let body = response.text().await?;
-
         let v: Response<T> = serde_json::from_str(&body)?;
         match v {
             Response::Data { result, .. } => Ok(result),
@@ -94,7 +93,6 @@ enum Method {
     TransactionGet { params: TransactionParam },
 }
 
-
 #[derive(Clone, Deserialize, Debug, Serialize)]
 pub(crate) struct NodeCall {
     jsonrpc: String,
@@ -116,22 +114,26 @@ impl NodeCall {
     }
 
     pub(crate) fn block(height: u64) -> Self {
-        Self::new( Method::BlockGet { params: BlockParams { height }})
+        Self::new(Method::BlockGet {
+            params: BlockParams { height },
+        })
     }
 
     pub(crate) fn transaction(hash: String) -> Self {
-        Self::new(Method::TransactionGet { params: TransactionParam { hash }})
+        Self::new(Method::TransactionGet {
+            params: TransactionParam { hash },
+        })
     }
 }
 
 #[derive(Clone, Deserialize, Debug, Serialize)]
 struct BlockParams {
-    height: u64
+    height: u64,
 }
 
 #[derive(Clone, Deserialize, Debug, Serialize)]
 struct TransactionParam {
-    hash: String
+    hash: String,
 }
 
 #[async_trait]
