@@ -65,7 +65,7 @@ pub async fn get(client: &Client, height: &u64) -> Result<Block> {
 pub async fn get_raw(client: &Client, height: &u64) -> Result<BlockRaw> {
     let json = json!(NodeCall::block(*height));
     let url_path = "/";
-    client.post(&url_path, &json).await
+    client.post(url_path, &json).await
 }
 
 #[cfg(test)]
