@@ -321,14 +321,16 @@ pub enum Transaction {
         hash: String,
         price: u64,
     },
-    // not supported: BundleV1
+
+    #[serde(other)]
+    Unknown, // Any other transaction not supported
 }
 
 /// Get a specifyc transaction by hash
 pub async fn get(client: &Client, hash: &str) -> Result<Transaction> {
     let json = NodeCall::transaction(hash.to_string());
     let url_path = "/";
-    client.post(&url_path, &json).await
+    client.post(url_path, &json).await
 }
 
 #[cfg(test)]
@@ -535,7 +537,10 @@ mod test {
             hash: _hash,
         } = txn
         {
-            assert_eq!(address, "11cY9Ly5H3hU4Ai2k7G9niHLAxsKb1ragQYGLJ7E9vh4Vnx6Efb");
+            assert_eq!(
+                address,
+                "11cY9Ly5H3hU4Ai2k7G9niHLAxsKb1ragQYGLJ7E9vh4Vnx6Efb"
+            );
             assert_eq!(stake_amount, 1000000000000);
             assert_eq!(fee, 35000);
         } else {
