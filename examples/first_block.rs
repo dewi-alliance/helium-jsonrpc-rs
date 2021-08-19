@@ -1,4 +1,4 @@
-use helium_jsonrpc::{blocks, transactions::Transaction, Client};
+use helium_jsonrpc::{blocks, Client, Transaction};
 
 //This function will find the first block that blockchain-node has. Should be whatever height the snapshot
 //was when the node was first started. May take a while if the node has been running for a long time.
