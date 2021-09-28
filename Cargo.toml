@@ -9,11 +9,8 @@ version = "1.0.1"
 
 [dependencies]
 async-trait = "0"
-base64 = "0"
-futures = "0"
 helium-api = {git = "https://github.com/helium/helium-api-rs"}
-reqwest = {version = "0", default-features = false, features = ["gzip", "json", "rustls-tls"]}
-rust_decimal = {version = "1", features = ["serde-float"]}
+reqwest = {version = "0", default-features = false, features = ["json"]}
 serde = {version = "1", features = ["derive"]}
 serde_json = "1"
 thiserror = "1"

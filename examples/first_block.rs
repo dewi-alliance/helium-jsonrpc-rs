@@ -29,8 +29,8 @@ async fn find_first_block(client: &Client) -> u64 {
             }
         };
         block.transactions.iter().for_each(|txn| match txn {
-            Transaction::RewardsV2 { start_epoch, .. } => {
-                current_height = *start_epoch;
+            Transaction::RewardsV2(rewards) => {
+                current_height = rewards.start_epoch;
             }
             _ => {
                 last_safe_height = current_height;
