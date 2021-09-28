@@ -11,8 +11,7 @@ version = "1.0.1"
 async-trait = "0"
 base64 = "0"
 futures = "0"
-#TODO: Change to helium repo when this has been merged
-helium-api = {git = "https://github.com/stakejoy/helium-api-rs", branch = "cb/add-acct-activity"}
+helium-api = {git = "https://github.com/helium/helium-api-rs"}
 reqwest = {version = "0", default-features = false, features = ["gzip", "json", "rustls-tls"]}
 rust_decimal = {version = "1", features = ["serde-float"]}
 serde = {version = "1", features = ["derive"]}

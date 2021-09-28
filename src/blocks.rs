@@ -1,5 +1,4 @@
 use crate::*;
-use helium_api::models::Transaction;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 
