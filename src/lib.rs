@@ -3,7 +3,7 @@ use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use std::time::Duration;
 use std::time::SystemTime;
 
-pub use helium_api::models::Transaction;
+pub use helium_api::models::transactions::Transaction;
 
 pub mod error;
 
