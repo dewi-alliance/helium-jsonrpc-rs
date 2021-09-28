@@ -21,8 +21,8 @@ async fn main() {
         for txn in txns.iter() {
             let _tx = match transactions::get(&client, &txn.hash).await {
                 Ok(tx) => match tx {
-                    Transaction::PocRequestV1 { challenger, .. } => {
-                        if challenger == gateway {
+                    Transaction::PocRequestV1(poc_request) => {
+                        if poc_request.challenger == gateway {
                             println!(
                                 "Most recent challenge issued at block {}. tx {}",
                                 current_height, txn.hash
