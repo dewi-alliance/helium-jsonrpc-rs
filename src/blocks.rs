@@ -24,7 +24,12 @@ impl BlockRaw {
     pub async fn get_transactions(&self, client: &Client) -> Result<Vec<Transaction>> {
         let mut txns: Vec<Transaction> = Vec::new();
         for txn in &self.transactions {
-            txns.push(transactions::get(client, &txn.hash).await?);
+            txns.push(transactions::get(client, &txn.hash).await.map_err(|_| {
+                Error::TransactionProcessing {
+                    r#type: txn.r#type.clone(),
+                    hash: txn.hash.clone(),
+                }
+            })?);
         }
         Ok(txns)
     }
