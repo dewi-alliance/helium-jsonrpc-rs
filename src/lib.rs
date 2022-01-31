@@ -3,12 +3,16 @@ use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use std::time::Duration;
 use std::time::SystemTime;
 
-pub use helium_api::models::transactions::Transaction;
+pub use helium_api::models::{
+    transactions::{self as txn, Transaction},
+    Hnt, Hst, Usd,
+};
 
 pub mod error;
 
 pub use error::{Error, Result};
 pub mod blocks;
+pub mod oracle;
 pub mod transactions;
 
 /// The default timeout for API requests
@@ -93,6 +97,7 @@ enum Method {
     BlockHeight,
     BlockGet { params: BlockParams },
     TransactionGet { params: TransactionParam },
+    OraclePriceCurrent,
 }
 
 #[derive(Clone, Deserialize, Debug, Serialize)]
@@ -125,6 +130,10 @@ impl NodeCall {
         Self::new(Method::TransactionGet {
             params: TransactionParam { hash },
         })
+    }
+
+    pub(crate) fn oracle_price_current() -> Self {
+        Self::new(Method::OraclePriceCurrent)
     }
 }
 
