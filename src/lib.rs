@@ -96,10 +96,23 @@ fn now_millis() -> String {
 enum Method {
     WalletList,
     BlockHeight,
-    BlockGet { params: BlockParams },
-    TransactionGet { params: TransactionParam },
+    BlockGet {
+        params: BlockParams,
+    },
     OraclePriceCurrent,
     AccountGet { params: AccountGetParams },
+    TransactionGet {
+        params: TransactionParam,
+    },
+    PendingTransactionStatus {
+        params: PendingTransactionStatus,
+    },
+    PendingTransactionSubmit {
+        params: PendingTransactionSubmitOrVerifyParam,
+    },
+    PendingTransactionVerify {
+        params: PendingTransactionSubmitOrVerifyParam,
+    },
 }
 
 #[derive(Clone, Deserialize, Debug, Serialize)]
@@ -143,6 +156,18 @@ impl NodeCall {
             params: AccountGetParams { address, height },
         })
     }
+
+    pub(crate) fn transaction_submit(base64: String) -> Self {
+        Self::new(Method::PendingTransactionSubmit {
+            params: PendingTransactionSubmitOrVerifyParam { txn: base64 },
+        })
+    }
+
+    pub(crate) fn transaction_verify(base64: String) -> Self {
+        Self::new(Method::PendingTransactionVerify {
+            params: PendingTransactionSubmitOrVerifyParam { txn: base64 },
+        })
+    }
 }
 
 #[derive(Clone, Deserialize, Debug, Serialize)]
@@ -160,6 +185,16 @@ struct AccountGetParams {
     address: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     height: Option<u64>,
+}
+
+#[derive(Clone, Deserialize, Debug, Serialize)]
+struct PendingTransactionStatus {
+    hash: String,
+}
+
+#[derive(Clone, Deserialize, Debug, Serialize)]
+struct PendingTransactionSubmitOrVerifyParam {
+    txn: String,
 }
 
 #[async_trait]
