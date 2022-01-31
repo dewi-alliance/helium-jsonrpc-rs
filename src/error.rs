@@ -20,6 +20,8 @@ pub enum Error {
     TransactionProcessing { r#type: String, hash: String },
     #[error("node response with no error but no result")]
     NodeResponseNoResult,
+    #[error("invalid transaction")]
+    TxnInvalid(String),
 }
 
 impl Error {
