@@ -3,11 +3,15 @@ use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use std::time::Duration;
 use std::time::SystemTime;
 
-pub use helium_api::models::transactions::Transaction;
+pub use helium_api::models::{
+    transactions::{self as txn, Transaction},
+    Hnt, Hst, Usd,
+};
 
 pub mod error;
 
 pub use error::{Error, Result};
+pub mod account;
 pub mod blocks;
 pub mod transactions;
 
@@ -93,6 +97,7 @@ enum Method {
     BlockHeight,
     BlockGet { params: BlockParams },
     TransactionGet { params: TransactionParam },
+    AccountGet { params: AccountGetParams },
 }
 
 #[derive(Clone, Deserialize, Debug, Serialize)]
@@ -126,6 +131,12 @@ impl NodeCall {
             params: TransactionParam { hash },
         })
     }
+
+    pub(crate) fn account_get(address: String, height: Option<u64>) -> Self {
+        Self::new(Method::AccountGet {
+            params: AccountGetParams { address, height },
+        })
+    }
 }
 
 #[derive(Clone, Deserialize, Debug, Serialize)]
@@ -136,6 +147,13 @@ struct BlockParams {
 #[derive(Clone, Deserialize, Debug, Serialize)]
 struct TransactionParam {
     hash: String,
+}
+
+#[derive(Clone, Deserialize, Debug, Serialize)]
+struct AccountGetParams {
+    address: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    height: Option<u64>,
 }
 
 #[async_trait]
