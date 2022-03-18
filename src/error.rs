@@ -2,12 +2,6 @@ use thiserror::Error;
 
 pub type Result<T = ()> = std::result::Result<T, Error>;
 
-#[derive(Clone, Debug)]
-pub(crate) struct ErrorElement {
-    message: String,
-    code: i32,
-}
-
 #[derive(Error, Debug)]
 pub enum Error {
     #[error("request error")]
@@ -22,6 +16,8 @@ pub enum Error {
     NodeError(String, isize),
     #[error("error deserializing JSON response")]
     JsonDeserialization(#[from] serde_json::Error),
+    #[error("error deserializing transaction of type {r#type} and hash {hash}")]
+    TransactionProcessing { r#type: String, hash: String },
     #[error("node response with no error but no result")]
     NodeResponseNoResult,
 }

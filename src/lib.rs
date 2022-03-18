@@ -11,6 +11,7 @@ pub use helium_api::models::{
 pub mod error;
 
 pub use error::{Error, Result};
+pub mod account;
 pub mod blocks;
 pub mod oracle;
 pub mod transactions;
@@ -98,6 +99,7 @@ enum Method {
     BlockGet { params: BlockParams },
     TransactionGet { params: TransactionParam },
     OraclePriceCurrent,
+    AccountGet { params: AccountGetParams },
 }
 
 #[derive(Clone, Deserialize, Debug, Serialize)]
@@ -135,6 +137,12 @@ impl NodeCall {
     pub(crate) fn oracle_price_current() -> Self {
         Self::new(Method::OraclePriceCurrent)
     }
+  
+    pub(crate) fn account_get(address: String, height: Option<u64>) -> Self {
+        Self::new(Method::AccountGet {
+            params: AccountGetParams { address, height },
+        })
+    }
 }
 
 #[derive(Clone, Deserialize, Debug, Serialize)]
@@ -145,6 +153,13 @@ struct BlockParams {
 #[derive(Clone, Deserialize, Debug, Serialize)]
 struct TransactionParam {
     hash: String,
+}
+
+#[derive(Clone, Deserialize, Debug, Serialize)]
+struct AccountGetParams {
+    address: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    height: Option<u64>,
 }
 
 #[async_trait]
