@@ -94,16 +94,14 @@ fn now_millis() -> String {
 #[serde(tag = "method")]
 #[serde(rename_all = "snake_case")]
 enum Method {
-    WalletList,
+    AccountGet {
+        params: AccountGetParams,
+    },
     BlockHeight,
     BlockGet {
         params: BlockParams,
     },
     OraclePriceCurrent,
-    AccountGet { params: AccountGetParams },
-    TransactionGet {
-        params: TransactionParam,
-    },
     PendingTransactionStatus {
         params: PendingTransactionStatus,
     },
@@ -113,6 +111,10 @@ enum Method {
     PendingTransactionVerify {
         params: PendingTransactionSubmitOrVerifyParam,
     },
+    TransactionGet {
+        params: TransactionParam,
+    },
+    WalletList,
 }
 
 #[derive(Clone, Deserialize, Debug, Serialize)]
@@ -131,8 +133,10 @@ impl NodeCall {
         }
     }
 
-    pub(crate) fn height() -> Self {
-        Self::new(Method::BlockHeight)
+    pub(crate) fn account_get(address: String, height: Option<u64>) -> Self {
+        Self::new(Method::AccountGet {
+            params: AccountGetParams { address, height },
+        })
     }
 
     pub(crate) fn block(height: u64) -> Self {
@@ -141,19 +145,17 @@ impl NodeCall {
         })
     }
 
-    pub(crate) fn transaction(hash: String) -> Self {
-        Self::new(Method::TransactionGet {
-            params: TransactionParam { hash },
-        })
+    pub(crate) fn height() -> Self {
+        Self::new(Method::BlockHeight)
     }
 
     pub(crate) fn oracle_price_current() -> Self {
         Self::new(Method::OraclePriceCurrent)
     }
 
-    pub(crate) fn account_get(address: String, height: Option<u64>) -> Self {
-        Self::new(Method::AccountGet {
-            params: AccountGetParams { address, height },
+    pub(crate) fn transaction(hash: String) -> Self {
+        Self::new(Method::TransactionGet {
+            params: TransactionParam { hash },
         })
     }
 
@@ -171,20 +173,15 @@ impl NodeCall {
 }
 
 #[derive(Clone, Deserialize, Debug, Serialize)]
-struct BlockParams {
-    height: u64,
-}
-
-#[derive(Clone, Deserialize, Debug, Serialize)]
-struct TransactionParam {
-    hash: String,
-}
-
-#[derive(Clone, Deserialize, Debug, Serialize)]
 struct AccountGetParams {
     address: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     height: Option<u64>,
+}
+
+#[derive(Clone, Deserialize, Debug, Serialize)]
+struct BlockParams {
+    height: u64,
 }
 
 #[derive(Clone, Deserialize, Debug, Serialize)]
@@ -195,6 +192,11 @@ struct PendingTransactionStatus {
 #[derive(Clone, Deserialize, Debug, Serialize)]
 struct PendingTransactionSubmitOrVerifyParam {
     txn: String,
+}
+
+#[derive(Clone, Deserialize, Debug, Serialize)]
+struct TransactionParam {
+    hash: String,
 }
 
 #[async_trait]
