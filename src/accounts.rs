@@ -34,7 +34,7 @@ mod test {
     #[test]
     async fn get_account() {
         let client = Client::default();
-        let account = account::get(
+        let account = accounts::get(
             &client,
             "1be3xdTQTYX8UbA5ND5F1cKcGEw1BSD2akyFtXbJkxDm5JtLzzD",
         )

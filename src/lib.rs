@@ -11,7 +11,7 @@ pub use helium_api::models::{
 pub mod error;
 
 pub use error::{Error, Result};
-pub mod account;
+pub mod accounts;
 pub mod blocks;
 pub mod oracle;
 pub mod transactions;
